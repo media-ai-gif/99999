@@ -22,6 +22,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Y2K RomComs: Главная</title>
     
+    <!-- ДОБАВЛЕН ФАВИКОН (Emoji в стилистике Y2K) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💖</text></svg>">
+    
     <!-- Загрузка шрифта Ubuntu (жирный и красивый) -->
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
     <!-- Загрузка Tailwind CSS для базовой структуры -->
@@ -173,6 +176,43 @@
             border: 4px solid var(--purple-dark);
             box-shadow: 6px 6px 0 var(--pink-accent);
         }
+
+        /* Стили для КВИЗА */
+        .quiz-option-card {
+            background-color: #FFF;
+            border: 3px solid var(--purple-dark);
+            transition: all 0.2s;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #660033;
+            min-height: 100px; /* Для лучшего вида */
+        }
+
+        .quiz-option-card:hover {
+            background-color: #FFC0CB;
+            transform: translateY(-2px);
+            box-shadow: 5px 5px 0 #660033;
+        }
+        
+        .quiz-option-card.selected {
+            background-color: var(--mint-green);
+            border-color: var(--pink-accent);
+            box-shadow: 0 0 0 #660033;
+            transform: translate(3px, 3px);
+            border-width: 4px;
+        }
+
+        .quiz-progress-bar {
+            height: 10px;
+            background-color: var(--pink-medium);
+            border: 2px solid var(--purple-dark);
+        }
+        
+        .quiz-progress-fill {
+            height: 100%;
+            background-color: var(--pink-accent);
+            transition: width 0.3s ease-in-out;
+        }
+
     </style>
 </head>
 <body id="top">
@@ -192,6 +232,10 @@
                 </button>
                 <button onclick="navigateTo('music')" id="nav-music" class="y2k-nav-button">
                     Музыка и Саундтреки
+                </button>
+                <!-- НОВАЯ КНОПКА ДЛЯ ТЕСТА -->
+                <button onclick="navigateTo('quiz')" id="nav-quiz" class="y2k-nav-button">
+                    Тест: Героиня Y2K
                 </button>
             </nav>
         </div>
@@ -309,6 +353,34 @@
                 <!-- Карточки песен будут сгенерированы здесь -->
             </div>
         </div>
+        
+        <!-- 5. НОВЫЙ РАЗДЕЛ: СТРАНИЦА ТЕСТА (изначально скрыта) -->
+        <div id="quiz-page" class="content-page hidden">
+            <h1 class="y2k-title text-center mx-auto mt-8 p-4 max-w-lg shadow-xl uppercase bg-white rounded-lg border-4 border-purple-dark">
+                Узнай, Какая Ты Героиня Ромкома Y2K!
+            </h1>
+            
+            <!-- Контейнер для прогресса -->
+            <div class="quiz-progress-bar w-full rounded-full mt-4 mb-8">
+                <div id="quiz-progress" class="quiz-progress-fill rounded-full" style="width: 0%;"></div>
+            </div>
+
+            <section id="quiz-container" class="p-6 bg-white rounded-xl border-4 border-pink-accent shadow-lg mt-8">
+                <!-- Область вопросов и результатов -->
+                <div id="quiz-question-area" class="space-y-6">
+                    <!-- Вопросы будут рендериться здесь -->
+                </div>
+                <div id="quiz-result-area" class="hidden text-center">
+                    <!-- Результат будет рендериться здесь -->
+                </div>
+                
+                <!-- Кнопка "Далее" / "Начать тест" -->
+                <button id="quiz-next-button" onclick="handleNext()" class="y2k-nav-button w-full mt-6 text-lg">
+                    Начать Тест!
+                </button>
+            </section>
+        </div>
+
 
         
         <!-- НИЖНИЙ КОЛОНТИТУЛ -->
@@ -321,182 +393,352 @@
 
     <!-- СКРИПТЫ ДЛЯ ДАННЫХ И ИНТЕРАКТИВНОСТИ -->
     <script>
-        // --- ДАННЫЕ ДЛЯ СТРАНИЦЫ МУЗЫКА ---
-        const songsData = [
-            {
-                song: "A Thousand Miles",
-                artist: "Vanessa Carlton",
-                film: "Белые цыпочки (White Chicks, 2004)",
-                scene: "Классический комедийный момент, когда Маркус/Кевин поют эту песню в машине.",
-                rutubeId: "f48419f0c86da34d40e09a72f74e00b7" 
-            },
-            {
-                song: "Breathe (2 AM)",
-                artist: "Anna Nalick",
-                film: "Дьявол носит Prada (The Devil Wears Prada, 2006)",
-                scene: "Используется в эмоционально важные моменты, подчеркивая внутренние переживания героини.",
-                rutubeId: "9f1afa07335d24da3f49a6c6bb42d396" 
-            },
-            {
-                song: "This Love",
-                artist: "Maroon 5",
-                film: "Как отделаться от парня за 10 дней (2003)",
-                scene: "Популярный трек, задающий энергичный и современный тон всему фильму.",
-                rutubeId: "1b55bf332d4828a83af52842aae053b2" 
-            },
-            {
-                song: "Come Away With Me",
-                artist: "Norah Jones",
-                film: "Любовь с уведомлением (Two Weeks Notice, 2002)",
-                scene: "Мягкий джазовый трек, часто звучащий в спокойные, романтические моменты.",
-                rutubeId: "953c7c33cd87f47270104150658ced56" 
-            }
+        // ИНСТРУКЦИЯ: const apiKey = "" должна быть пустой.
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        // --- ГЛОБАЛЬНЫЕ ДАННЫЕ ДЛЯ ТЕСТА ---
+        let currentQuestionIndex = 0;
+        let totalScore = 0;
+        let selectedOptionScore = null;
+
+        // Определения героинь для результата
+        const heroineArchetypes = [
+            { minScore: 10, maxScore: 18, name: "Элли Вудс", movie: "Блондинка в законе (Legally Blonde)", image: "https://i.ibb.co/Lg556Lg/reese.jpg" },
+            { minScore: 19, maxScore: 26, name: "Кэди Херон", movie: "Дрянные девчонки (Mean Girls)", image: "https://i.ibb.co/7jXg04S/lindsay.jpg" },
+            { minScore: 27, maxScore: 34, name: "Энди Андерсон", movie: "Как отделаться от парня за 10 дней (How to Lose a Guy in 10 Days)", image: "https://i.ibb.co/hLq0h6y/kate.jpg" },
+            { minScore: 35, maxScore: 40, name: "Мия Термополис", movie: "Как стать принцессой (The Princess Diaries)", image: "https://i.ibb.co/6P2h1cK/anne.jpg" },
         ];
 
-        // --- ДАННЫЕ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ (Актеры) ---
-        // УВЕЛИЧЕНО ДО 12 АКТЕРОВ
-        const actorsData = [
-            {
-                name: "Риз Уизерспун", role: "Королева Южного Очарования", movies: "Блондинка в законе, Стильная штучка",
-                image: "https://i.ibb.co/Lg556Lg/reese.jpg", 
-            },
-            {
-                name: "Мэттью МакКонахи", role: "Главный Герой-Сердцеед", movies: "Как отделаться от парня за 10 дней, Свадебный переполох",
-                image: "https://i.ibb.co/3s6Hk8S/matthew.jpg", 
-            },
-            {
-                name: "Кейт Хадсон", role: "Икона Свободного Духа", movies: "Как отделаться от парня за 10 дней, Война невест",
-                image: "https://i.ibb.co/hLq0h6y/kate.jpg",
-            },
-            {
-                name: "Хью Грант", role: "Обаятельный Недотепа", movies: "Реальная любовь, Дневник Бриджит Джонс",
-                image: "https://i.ibb.co/yY11WqZ/hugh.jpg",
-            },
-            {
-                name: "Сандра Буллок", role: "Мисс Конгениальность", movies: "Предложение, Любовь с уведомлением",
-                image: "https://i.ibb.co/gST484j/sandra.jpg",
-            },
-            {
-                name: "Дженнифер Лопес", role: "Дива и Свадебный Эксперт", movies: "Свадебный переполох, Если свекровь — монстр",
-                image: "https://i.ibb.co/hK2qg3D/jlo.jpg",
-            },
-            {
-                name: "Райан Рейнольдс", role: "Лучший Друг с Секретом", movies: "Просто друзья, Предложение",
-                image: "https://i.ibb.co/yY42f4c/ryan.jpg",
-            },
-            {
-                name: "Линдси Лохан", role: "Королева Подростковых Драм", movies: "Дрянные девчонки, Чумовая пятница",
-                image: "https://i.ibb.co/7jXg04Q/lindsay.jpg",
-            },
-            {
-                name: "Энн Хэтэуэй", role: "От Гадкого Утенка до Принцессы", movies: "Как стать принцессой, Дьявол носит Prada",
-                image: "https://i.ibb.co/6P2h1cK/anne.jpg",
-            },
-            // НОВЫЕ АКТЕРЫ:
-            {
-                name: "Кэтрин Хайгл", role: "Специалист по Сложным Отношениям", movies: "27 свадеб, Голая правда",
-                image: "https://i.ibb.co/30H9q1N/katherine.jpg", 
-            },
-            {
-                name: "Джерард Батлер", role: "Шотландский Брутал с Добрым Сердцем", movies: "P.S. Я люблю тебя, Голая правда",
-                image: "https://i.ibb.co/Yc5XJ74/gerard.jpg", 
-            },
-            {
-                name: "Дженнифер Гарнер", role: "Очаровательная Девочка-Подросток во Взрослом Теле", movies: "Из 13 в 30",
-                image: "https://i.ibb.co/9Y8j1Hk/jennifer.jpg", 
-            }
-        ];
 
-        // --- ДАННЫЕ ДЛЯ СТРАНИЦЫ ТОП-10 (Фильмы) ---
-        const filmsData = [
+        const quizData = [
             {
-                id: 1, titleRu: "Блондинка в законе", titleEn: "Legally Blonde", year: 2001, genre: "Комедия, Романтика.",
-                plot: "Элли Вудс доказывает, что ум и стиль могут существовать вместе, поступив в Гарвард, чтобы вернуть своего парня.",
-                quote: "\"Что, как не идеальный маникюр, может подбодрить?\"",
-                posterUrl: "https://i.ibb.co/L5rK5Q1/Legally-Blonde-2001.jpg", 
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "09a828c40bef63615b69c68718c1a770" 
+                q: "1. Какой твой идеальный аксессуар Y2K?",
+                options: [
+                    { text: "Розовая пушистая ручка и блокнот для записи всех важных дел.", score: 1, image: "https://placehold.co/100x70/FF69B4/FFFFFF?text=РУЧКА" },
+                    { text: "Объемный свитер и невзрачный рюкзак (чтобы слиться с толпой).", score: 2, image: "https://placehold.co/100x70/DDA0DD/FFFFFF?text=РЮКЗАК" },
+                    { text: "Мини-сумка-багет и диктофон для рабочего интервью.", score: 3, image: "https://placehold.co/100x70/FFC0CB/330066?text=СУМКА" },
+                    { text: "Тиара и длинные белые перчатки. Иногда я их просто надеваю дома.", score: 4, image: "https://placehold.co/100x70/87CEEB/FFFFFF?text=ТИАРА" }
+                ]
             },
             {
-                id: 2, titleRu: "Как отделаться от парня за 10 дней", titleEn: "How to Lose a Guy in 10 Days", year: 2003, genre: "Комедия, Романтика.",
-                plot: "Журналистка и рекламный агент заключают пари, чтобы написать статьи/заключить сделку, что приводит к комичным недоразумениям.",
-                quote: "\"Вам нужен парень, который любит вас за то, кто вы есть, а не за тем, кем вы притворяетесь.\"",
-                posterUrl: "https://i.ibb.co/n7B2t81/How-to-Lose-a-Guy-in-10-Days-2003.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "859ccc8b25de96750e8f0b396a2ae07c" 
+                q: "2. Что ты делаешь, когда тебе нужно принять важное решение?",
+                options: [
+                    { text: "Устраиваю мозговой штурм с моим идеальным маникюром.", score: 1, image: "https://placehold.co/100x70/FF1493/FFFFFF?text=МАНИКЮР" },
+                    { text: "Обращаюсь за советом к подруге, которая знает все социальные коды.", score: 2, image: "https://placehold.co/100x70/98FF98/330066?text=ПОДРУГА" },
+                    { text: "Работаю над идеальной статьей, чтобы решить проблему в глобальном масштабе.", score: 3, image: "https://placehold.co/100x70/330066/FF69B4?text=СТАТЬЯ" },
+                    { text: "Паникую, пока не вмешается бабушка или наставник.", score: 4, image: "https://placehold.co/100x70/FFC0CB/330066?text=ПАНИКА" }
+                ]
             },
             {
-                id: 3, titleRu: "Дрянные девчонки", titleEn: "Mean Girls", year: 2004, genre: "Подростковая комедия.",
-                plot: "Девушка, выросшая в Африке, впервые попадает в обычную американскую школу и становится частью группы \"Пластикс\".",
-                quote: "\"В среду мы носим розовое.\"",
-                posterUrl: "https://i.ibb.co/PhF26bB/Mean-Girls-2004.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "1001aa6f8ce43e410655c89128739dc8" 
+                q: "3. Твой типичный стиль одежды в нерабочий день?",
+                options: [
+                    { text: "Розовый костюм, каблуки, блеск для губ. Всегда готова к суду или вечеринке.", score: 1, image: "https://placehold.co/100x70/FF69B4/FFFFFF?text=РОЗОВЫЙ" },
+                    { text: "Футболка с ироничным принтом и джинсы. Комфорт и незаметность.", score: 2, image: "https://placehold.co/100x70/1A1A1A/FFFFFF?text=ДЖИНСЫ" },
+                    { text: "Что-то стильное, но практичное. Может быть, модный кроп-топ с низкой посадкой.", score: 3, image: "https://placehold.co/100x70/800080/FFFFFF?text=ТОП" },
+                    { text: "Что угодно, что не испачкает мою школьную форму (или мантию).", score: 4, image: "https://placehold.co/100x70/808080/FFFFFF?text=ФОРМА" }
+                ]
             },
             {
-                id: 4, titleRu: "Правила съема: Метод Хитча", titleEn: "Hitch", year: 2005, genre: "Комедия, Романтика.",
-                plot: "Легендарный \"доктор свиданий\" помогает нерешительным мужчинам, но сам сталкивается с трудностями в отношениях с журналисткой.",
-                quote: "\"Жизнь не измеряется количеством вздохов, а количеством моментов, от которых захватывает дух.\"",
-                posterUrl: "https://i.ibb.co/hK0W70t/Hitch-2005.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "fc3462c0174ca13fb62768da5e1adcba" 
+                q: "4. Как ты реагируешь на парня, который тебя недооценивает?",
+                options: [
+                    { text: "Доказываю ему свою правоту через блестящую карьеру и успех.", score: 1, image: "https://placehold.co/100x70/00FFFF/330066?text=УСПЕХ" },
+                    { text: "Просто игнорирую и нахожу себе новых друзей, которые меня ценят.", score: 2, image: "https://placehold.co/100x70/FFD700/330066?text=ДРУЗЬЯ" },
+                    { text: "Заключаю с ним пари, чтобы преподать ему урок, и побеждаю.", score: 3, image: "https://placehold.co/100x70/FFA500/FFFFFF?text=ПАРИ" },
+                    { text: "Случайно становлюсь принцессой. Это обычно решает проблему.", score: 4, image: "https://placehold.co/100x70/DAA520/FFFFFF?text=ПРИНЦЕССА" }
+                ]
             },
             {
-                id: 5, titleRu: "Стильная штучка", titleEn: "Sweet Home Alabama", year: 2002, genre: "Романтическая комедия.",
-                plot: "Успешный дизайнер из Нью-Йорка должна вернуться в Алабаму, чтобы развестись со своим мужем детства.",
-                quote: "\"Ты не можешь забыть о своих корнях, просто потому что нашла новый цветок.\"",
-                posterUrl: "https://i.ibb.co/hL4f00G/Sweet-Home-Alabama-2002.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "9f031d758b02ecd4051453cdbbb7dc8d" 
+                q: "5. Какое место в школе ты занимаешь?",
+                options: [
+                    { text: "Везде, где есть кофе и возможность помочь отстаивать чьи-то права.", score: 1, image: "https://placehold.co/100x70/CD5C5C/FFFFFF?text=ПРАВА" },
+                    { text: "Я либо новенькая, либо в библиотеке, либо в самой крутой, но странной компании.", score: 2, image: "https://placehold.co/100x70/BA55D3/FFFFFF?text=НОВЕНЬКАЯ" },
+                    { text: "В отделе журналистики, наблюдая за всеми. Моя цель — написать сенсацию.", score: 3, image: "https://placehold.co/100x70/00FF7F/330066?text=СЕНСАЦИЯ" },
+                    { text: "Не знаю, пока не сниму очки и не сделаю прическу, меня никто не видит.", score: 4, image: "https://placehold.co/100x70/808080/FFFFFF?text=ОЧКИ" }
+                ]
             },
             {
-                id: 6, titleRu: "Мамма Миа!", titleEn: "Mamma Mia!", year: 2008, genre: "Мюзикл, Романтика.",
-                plot: "Накануне свадьбы девушка ищет своего отца среди трех бывших возлюбленных ее матери на греческом острове.",
-                quote: "\"Если ты счастлив, будь смелым, дорогая!\"",
-                posterUrl: "https://i.ibb.co/p26d83y/Mamma-Mia-2008.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "ae69447697931d6a715af848da3c066c" 
+                q: "6. Твоя реакция на то, что у тебя не получается?",
+                options: [
+                    { text: "Беру розовую ручку, переписываю план и пробую снова, еще более эффектно.", score: 1, image: "https://placehold.co/100x70/FF69B4/FFFFFF?text=ПЛАН" },
+                    { text: "Это больно, но я умею учиться на своих ошибках, даже самых неловких.", score: 2, image: "https://placehold.co/100x70/FFA07A/330066?text=ОШИБКА" },
+                    { text: "Окей, я использовала неправильную стратегию. Пора пересмотреть все правила игры.", score: 3, image: "https://placehold.co/100x70/ADD8E6/330066?text=СТРАТЕГИЯ" },
+                    { text: "Считаю до десяти и иду искать свой замок, где меня поймут.", score: 4, image: "https://placehold.co/100x70/4682B4/FFFFFF?text=ЗАМОК" }
+                ]
             },
             {
-                id: 7, titleRu: "27 свадеб", titleEn: "27 Dresses", year: 2008, genre: "Романтическая комедия.",
-                plot: "Женщина, которая всегда была подружкой невесты, должна, наконец, позаботиться о своей собственной жизни и любви.",
-                quote: "\"Быть подружкой невесты — это все равно, что стать вратарем в хоккее. Ты всегда рядом, но никто не замечает твоего присутствия.\"",
-                posterUrl: "https://i.ibb.co/b34Xp1d/27-Dresses-2008.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "3abf9c34228dce20a17295c8226489ec" 
+                q: "7. Что ты предпочитаешь делать вместо скучной работы?",
+                options: [
+                    { text: "Еще более сложную, но интересную работу, которую все считают невозможной.", score: 1, image: "https://placehold.co/100x70/9370DB/FFFFFF?text=СЛОЖНО" },
+                    { text: "Просто притворяюсь, что меня здесь нет, и пишу сообщение в ICQ.", score: 2, image: "https://placehold.co/100x70/00BFFF/FFFFFF?text=ICQ" },
+                    { text: "Убеждаю своего босса (и парня), что я делаю что-то очень важное, когда на самом деле ищу 'того самого'.", score: 3, image: "https://placehold.co/100x70/F0E68C/330066?text=ВАЖНО" },
+                    { text: "Смотрю в зеркало и думаю: 'Может, мне пора сменить прическу?'", score: 4, image: "https://placehold.co/100x70/DA70D6/FFFFFF?text=ЗЕРКАЛО" }
+                ]
             },
             {
-                id: 8, titleRu: "Предложение", titleEn: "The Proposal", year: 2009, genre: "Романтическая комедия.",
-                plot: "Властная начальница заставляет своего ассистента притвориться ее женихом, чтобы избежать депортации.",
-                quote: "\"Я знаю, что ты хороший парень. Только не идеальный. И мне это нравится.\"",
-                posterUrl: "https://i.ibb.co/QpvL9n4/The-Proposal-2009.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "7c93c75c846a06d557ee8908da6e97de" 
+                q: "8. Как ты флиртуешь?",
+                options: [
+                    { text: "Защищаю своего парня в суде (или на дебатах) и побеждаю.", score: 1, image: "https://placehold.co/100x70/FFDAB9/330066?text=ЗАЩИТА" },
+                    { text: "Очень неуклюже. Обычно это включает падение или обливание напитком.", score: 2, image: "https://placehold.co/100x70/FF4500/FFFFFF?text=НЕУКЛЮЖЕ" },
+                    { text: "Выполняю 10 глупых заданий за 10 дней, чтобы он от меня убежал.", score: 3, image: "https://placehold.co/100x70/FF6347/FFFFFF?text=ЗАДАНИЯ" },
+                    { text: "Мой парень - телохранитель, который не отходит от меня ни на шаг.", score: 4, image: "https://placehold.co/100x70/20B2AA/FFFFFF?text=ОХРАНА" }
+                ]
             },
             {
-                id: 9, titleRu: "Как стать принцессой", titleEn: "The Princess Diaries", year: 2001, genre: "Подростковая комедия, Драма.",
-                plot: "Неуклюжая школьница из Сан-Франциско узнает, что она — наследница трона европейского королевства.",
-                posterUrl: "https://i.ibb.co/r7XyF07/The-Princess-Diaries-2001.jpg",
-                quote: "\"Смелость — это не отсутствие страха, а способность действовать вопреки ему.\"",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "a34120f3af0b9129695f14b21c64b6bb" 
+                q: "9. Твое отношение к каблукам?",
+                options: [
+                    { text: "Только самые высокие. Чем выше, тем ближе к успеху.", score: 1, image: "https://placehold.co/100x70/DC143C/FFFFFF?text=КАБЛУКИ" },
+                    { text: "Я могу ходить на них, но предпочитаю кеды для побега.", score: 2, image: "https://placehold.co/100x70/7B68EE/FFFFFF?text=КЕДЫ" },
+                    { text: "Неважно, лишь бы они подходили к моему наряду и статье.", score: 3, image: "https://placehold.co/100x70/F0F8FF/330066?text=НАРЯД" },
+                    { text: "Я падаю. Много. Но ради короны готова терпеть.", score: 4, image: "https://placehold.co/100x70/8A2BE2/FFFFFF?text=ПАДЕНИЕ" }
+                ]
             },
             {
-                id: 10, titleRu: "Война невест", titleEn: "Bride Wars", year: 2009, genre: "Комедия, Романтика.",
-                plot: "Две лучшие подруги становятся заклятыми врагами, когда их свадьбы оказываются назначены на один и тот же день.",
-                quote: "\"Ты не можешь быть хорошей невестой, если не знаешь, что такое быть хорошим другом.\"",
-                posterUrl: "https://i.ibb.co/tCg3r0P/Bride-Wars-2009.jpg",
-                // *** ОБНОВЛЕННЫЙ ID RuTube ***
-                rutubeId: "eb3709ef32b7a3e92766e77d42f5dac7" 
+                q: "10. Какой у тебя девиз на 2000-е?",
+                options: [
+                    { text: "“Что, как не идеальный маникюр, может подбодрить?”", score: 1, image: "https://placehold.co/100x70/FF69B4/FFFFFF?text=ДЕВИЗ1" },
+                    { text: "“В среду мы носим розовое, но только если это необходимо для маскировки.”", score: 2, image: "https://placehold.co/100x70/FFC0CB/330066?text=ДЕВИЗ2" },
+                    { text: "“Секс, любовь и бриллианты не изменят человека. А вот хороший репортаж — да.”", score: 3, image: "https://placehold.co/100x70/FFA07A/FFFFFF?text=ДЕВИЗ3" },
+                    { text: "“Смелость — это не отсутствие страха, а способность действовать вопреки ему.”", score: 4, image: "https://placehold.co/100x70/98FF98/330066?text=ДЕВИЗ4" }
+                ]
             }
         ];
 
 
-        // --- ФУНКЦИИ РЕНДЕРИНГА И НАВИГАЦИИ ---
+        // --- ФУНКЦИИ КВИЗА ---
 
         /**
+         * Начинает/перезапускает тест
+         */
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            totalScore = 0;
+            selectedOptionScore = null;
+            
+            document.getElementById('quiz-question-area').classList.remove('hidden');
+            document.getElementById('quiz-result-area').classList.add('hidden');
+            
+            const nextButton = document.getElementById('quiz-next-button');
+            nextButton.textContent = 'Далее!';
+            nextButton.disabled = true;
+            nextButton.classList.remove('active');
+            
+            renderQuestion();
+            updateProgressBar();
+        }
+
+        /**
+         * Рендерит текущий вопрос
+         */
+        function renderQuestion() {
+            const area = document.getElementById('quiz-question-area');
+            const question = quizData[currentQuestionIndex];
+            
+            if (!question) {
+                // Если вопросы закончились, показать результат
+                showResult();
+                return;
+            }
+
+            area.innerHTML = `
+                <h2 class="y2k-subtitle text-2xl font-bold mb-6 text-center">${question.q}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="options-grid">
+                    ${question.options.map((option, index) => `
+                        <div class="quiz-option-card p-4 rounded-lg flex flex-col items-center justify-center text-center hover:bg-pink-200"
+                             data-score="${option.score}"
+                             onclick="selectAnswer(this, ${option.score})">
+                            <img src="${option.image}" alt="Изображение для ответа ${index + 1}" class="w-24 h-16 rounded-lg mb-2 y2k-image border-2">
+                            <p class="text-sm font-semibold">${option.text}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Сброс состояния кнопки
+            const nextButton = document.getElementById('quiz-next-button');
+            nextButton.textContent = 'Далее!';
+            nextButton.disabled = true;
+            nextButton.classList.remove('active');
+            selectedOptionScore = null;
+        }
+        
+        /**
+         * Выбор ответа
+         * @param {HTMLElement} element - Выбранный элемент карточки
+         * @param {number} score - Количество баллов
+         */
+        function selectAnswer(element, score) {
+            // Сброс всех выбранных
+            document.querySelectorAll('.quiz-option-card').forEach(card => {
+                card.classList.remove('selected');
+                card.style.backgroundColor = '#FFF'; // Сброс инлайн-стиля
+            });
+
+            // Выделение текущего
+            element.classList.add('selected');
+            selectedOptionScore = score;
+            
+            // Активация кнопки
+            const nextButton = document.getElementById('quiz-next-button');
+            nextButton.disabled = false;
+            nextButton.classList.add('active');
+        }
+
+
+        /**
+         * Обработка нажатия кнопки "Далее" / "Начать Тест"
+         */
+        function handleNext() {
+            if (currentQuestionIndex === -1) {
+                // Если тест завершен, кнопка становится "Начать сначала"
+                startQuiz();
+                return;
+            }
+
+            if (selectedOptionScore !== null) {
+                totalScore += selectedOptionScore;
+                currentQuestionIndex++;
+                selectedOptionScore = null;
+                
+                if (currentQuestionIndex < quizData.length) {
+                    renderQuestion();
+                    updateProgressBar();
+                } else {
+                    showResult();
+                }
+            } else if (currentQuestionIndex === 0 && document.getElementById('quiz-result-area').classList.contains('hidden')) {
+                // Начало теста
+                currentQuestionIndex = 0;
+                startQuiz();
+            } else {
+                 // Если ответ не выбран, ничего не делаем (кнопка disabled)
+            }
+
+            // Скроллим наверх для лучшего UX
+            document.getElementById('quiz-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+
+        /**
+         * Обновление полосы прогресса
+         */
+        function updateProgressBar() {
+            const progress = document.getElementById('quiz-progress');
+            const percentage = ((currentQuestionIndex) / quizData.length) * 100;
+            progress.style.width = `${percentage}%`;
+        }
+
+
+        /**
+         * Показывает финальный результат
+         */
+        async function showResult() {
+            const area = document.getElementById('quiz-question-area');
+            const resultElement = document.getElementById('quiz-result-area');
+            const nextButton = document.getElementById('quiz-next-button');
+            
+            area.classList.add('hidden');
+            resultElement.classList.remove('hidden');
+            
+            // 1. Определение героини
+            const heroine = heroineArchetypes.find(h => totalScore >= h.minScore && totalScore <= h.maxScore);
+            
+            // 2. Рендеринг результата
+            resultElement.innerHTML = `
+                <h2 class="y2k-subtitle text-4xl font-bold text-center mb-4 uppercase">Твой Результат:</h2>
+                <div class="p-4 bg-white rounded-lg border-4 border-purple-dark inline-block mx-auto shadow-xl">
+                    <span class="text-3xl text-pink-700 font-extrabold">${heroine.name}</span>
+                </div>
+                <p class="text-center italic text-xl mb-6 mt-2 text-gray-700">(${heroine.movie})</p>
+                <img src="${heroine.image}" 
+                     alt="Изображение ${heroine.name}" 
+                     class="rounded-xl y2k-image mx-auto w-3/4 md:w-1/3 mb-6"
+                     onerror="this.onerror=null;this.src='https://placehold.co/300x400/FF69B4/FFFFFF?text=${heroine.name}';" >
+                
+                <h3 class="font-bold text-2xl text-purple-700 mb-2">💖 Твой эксклюзивный гороскоп от Y2K-Goddess:</h3>
+                <div id="llm-description" class="p-4 bg-pink-100 rounded-lg border-2 border-pink-400">
+                    <div class="flex items-center justify-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-pink-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="font-bold text-lg text-purple-700">Загрузка твоего Y2K пророчества...</p>
+                    </div>
+                </div>
+            `;
+            
+            // 3. Обновление кнопки
+            nextButton.textContent = 'Пройти Снова!';
+            nextButton.disabled = false;
+            nextButton.classList.add('active');
+            currentQuestionIndex = -1; // Флаг, что тест завершен
+            
+            // 4. Запрос к нейросети
+            await generateResultDescription(heroine.name);
+            updateProgressBar();
+        }
+
+        /**
+         * Запрос к Gemini для генерации описания результата.
+         * @param {string} heroineType - Имя героини для описания.
+         */
+        async function generateResultDescription(heroineType) {
+            const descriptionElement = document.getElementById('llm-description');
+            
+            const systemPrompt = "Ты остроумный, восторженный автор поп-культурного журнала в стиле Y2K. Напиши краткое, веселое и невероятно лестное описание личности для человека, соответствующего заданному архетипу героини ромкома, включая совет на сегодня. Используй дружелюбный, игривый и слегка драматичный тон. Ответь одним абзацем.";
+            const userQuery = `Напиши описание для героини: ${heroineType}.`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const maxRetries = 5;
+            let currentRetry = 0;
+
+            while (currentRetry < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (text) {
+                        descriptionElement.innerHTML = `<p>${text}</p>`;
+                        return; // Успех
+                    }
+                } catch (error) {
+                    console.error('LLM API call failed:', error);
+                    currentRetry++;
+                    if (currentRetry < maxRetries) {
+                        const delay = Math.pow(2, currentRetry) * 1000; // Экспоненциальная задержка (1s, 2s, 4s, ...)
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            
+            // Если все попытки провалились
+            descriptionElement.innerHTML = `
+                <p class="text-red-600 font-bold">Ой! Наша Y2K-Goddess сейчас на дискотеке. Мы не смогли получить твое пророчество. Но ты все равно 💖 ${heroineType}! ✨</p>
+            `;
+        }
+
+
+        // --- ОБЩИЕ ФУНКЦИИ (ОСТАВИТЬ КАК БЫЛО) ---
+        
+        // ... (Все остальные функции navigateTo, generateActorCardHTML, generateVideoEmbed, generateSongCardHTML, generateFilmCardHTML, toggleFilmDetails)
+        
+        /**
          * Переключает видимость страниц и стили кнопок навигации.
-         * @param {string} pageId - ID страницы для отображения ('main', 'top10', 'music').
+         * @param {string} pageId - ID страницы для отображения ('main', 'top10', 'music', 'quiz').
          */
         function navigateTo(pageId) {
             document.querySelectorAll('.content-page').forEach(page => {
@@ -510,6 +752,21 @@
                 button.classList.remove('active');
             });
             document.getElementById(`nav-${pageId}`).classList.add('active');
+
+            // При переходе на страницу теста, если она еще не начата, показываем начальный экран.
+            if (pageId === 'quiz') {
+                document.getElementById('quiz-question-area').innerHTML = `
+                    <p class="text-xl text-center font-semibold text-purple-700">Готова окунуться в мир гламура, драмы и сотовых телефонов-раскладушек? Пройди наш тест, чтобы узнать, какая культовая героиня ромкома 2000-х скрывается внутри тебя!</p>
+                `;
+                document.getElementById('quiz-result-area').classList.add('hidden');
+                document.getElementById('quiz-question-area').classList.remove('hidden');
+                document.getElementById('quiz-next-button').textContent = 'Начать Тест!';
+                document.getElementById('quiz-next-button').disabled = false;
+                document.getElementById('quiz-next-button').classList.add('active');
+                currentQuestionIndex = 0;
+                totalScore = 0;
+                updateProgressBar();
+            }
 
             // Прокрутка наверх после смены страницы
             document.getElementById('top').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -636,6 +893,176 @@
                 }
             }
         }
+        
+        // --- ДАННЫЕ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ (Актеры) ---
+        const actorsData = [
+            {
+                name: "Риз Уизерспун", role: "Королева Южного Очарования", movies: "Блондинка в законе, Стильная штучка",
+                image: "https://i.ibb.co/Lg556Lg/reese.jpg", 
+            },
+            {
+                name: "Мэттью МакКонахи", role: "Главный Герой-Сердцеед", movies: "Как отделаться от парня за 10 дней, Свадебный переполох",
+                image: "https://i.ibb.co/3s6Hk8S/matthew.jpg", 
+            },
+            {
+                name: "Кейт Хадсон", role: "Икона Свободного Духа", movies: "Как отделаться от парня за 10 дней, Война невест",
+                image: "https://i.ibb.co/hLq0h6y/kate.jpg",
+            },
+            {
+                name: "Хью Грант", role: "Обаятельный Недотепа", movies: "Реальная любовь, Дневник Бриджит Джонс",
+                image: "https://i.ibb.co/yY11WqZ/hugh.jpg",
+            },
+            {
+                name: "Сандра Буллок", role: "Мисс Конгениальность", movies: "Предложение, Любовь с уведомлением",
+                image: "https://i.ibb.co/gST484j/sandra.jpg",
+            },
+            {
+                name: "Дженнифер Лопес", role: "Дива и Свадебный Эксперт", movies: "Свадебный переполох, Если свекровь — монстр",
+                image: "https://i.ibb.co/hK2qg3D/jlo.jpg",
+            },
+            {
+                name: "Райан Рейнольдс", role: "Лучший Друг с Секретом", movies: "Просто друзья, Предложение",
+                image: "https://i.ibb.co/yY42f4c/ryan.jpg",
+            },
+            {
+                name: "Линдси Лохан", role: "Королева Подростковых Драм", movies: "Дрянные девчонки, Чумовая пятница",
+                image: "https://i.ibb.co/7jXg04S/lindsay.jpg",
+            },
+            {
+                name: "Энн Хэтэуэй", role: "От Гадкого Утенка до Принцессы", movies: "Как стать принцессой, Дьявол носит Prada",
+                image: "https://i.ibb.co/6P2h1cK/anne.jpg",
+            },
+            // НОВЫЕ АКТЕРЫ:
+            {
+                name: "Кэтрин Хайгл", role: "Специалист по Сложным Отношениям", movies: "27 свадеб, Голая правда",
+                image: "https://i.ibb.co/30H9q1N/katherine.jpg", 
+            },
+            {
+                name: "Джерард Батлер", role: "Шотландский Брутал с Добрым Сердцем", movies: "P.S. Я люблю тебя, Голая правда",
+                image: "https://i.ibb.co/Yc5XJ74/gerard.jpg", 
+            },
+            {
+                name: "Дженнифер Гарнер", role: "Очаровательная Девочка-Подросток во Взрослом Теле", movies: "Из 13 в 30",
+                image: "https://i.ibb.co/9Y8j1Hk/jennifer.jpg", 
+            }
+        ];
+        
+        // --- ДАННЫЕ ДЛЯ СТРАНИЦЫ ТОП-10 (Фильмы) ---
+        const filmsData = [
+            {
+                id: 1, titleRu: "Блондинка в законе", titleEn: "Legally Blonde", year: 2001, genre: "Комедия, Романтика.",
+                plot: "Элли Вудс доказывает, что ум и стиль могут существовать вместе, поступив в Гарвард, чтобы вернуть своего парня.",
+                quote: "\"Что, как не идеальный маникюр, может подбодрить?\"",
+                posterUrl: "https://i.ibb.co/L5rK5Q1/Legally-Blonde-2001.jpg", 
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "09a828c40bef63615b69c68718c1a770" 
+            },
+            {
+                id: 2, titleRu: "Как отделаться от парня за 10 дней", titleEn: "How to Lose a Guy in 10 Days", year: 2003, genre: "Комедия, Романтика.",
+                plot: "Журналистка и рекламный агент заключают пари, чтобы написать статьи/заключить сделку, что приводит к комичным недоразумениям.",
+                quote: "\"Вам нужен парень, который любит вас за то, кто вы есть, а не за тем, кем вы притворяетесь.\"",
+                posterUrl: "https://i.ibb.co/n7B2t81/How-to-Lose-a-Guy-in-10-Days-2003.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "859ccc8b25de96750e8f0b396a2ae07c" 
+            },
+            {
+                id: 3, titleRu: "Дрянные девчонки", titleEn: "Mean Girls", year: 2004, genre: "Подростковая комедия.",
+                plot: "Девушка, выросшая в Африке, впервые попадает в обычную американскую школу и становится частью группы \"Пластикс\".",
+                quote: "\"В среду мы носим розовое.\"",
+                posterUrl: "https://i.ibb.co/PhF26bB/Mean-Girls-2004.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "1001aa6f8ce43e410655c89128739dc8" 
+            },
+            {
+                id: 4, titleRu: "Правила съема: Метод Хитча", titleEn: "Hitch", year: 2005, genre: "Комедия, Романтика.",
+                plot: "Легендарный \"доктор свиданий\" помогает нерешительным мужчинам, но сам сталкивается с трудностями в отношениях с журналисткой.",
+                quote: "\"Жизнь не измеряется количеством вздохов, а количеством моментов, от которых захватывает дух.\"",
+                posterUrl: "https://i.ibb.co/hK0W70t/Hitch-2005.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "fc3462c0174ca13fb62768da5e1adcba" 
+            },
+            {
+                id: 5, titleRu: "Стильная штучка", titleEn: "Sweet Home Alabama", year: 2002, genre: "Романтическая комедия.",
+                plot: "Успешный дизайнер из Нью-Йорка должна вернуться в Алабаму, чтобы развестись со своим мужем детства.",
+                quote: "\"Ты не можешь забыть о своих корнях, просто потому что нашла новый цветок.\"",
+                posterUrl: "https://i.ibb.co/hL4f00G/Sweet-Home-Alabama-2002.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "9f031d758b02ecd4051453cdbbb7dc8d" 
+            },
+            {
+                id: 6, titleRu: "Мамма Миа!", titleEn: "Mamma Mia!", year: 2008, genre: "Мюзикл, Романтика.",
+                plot: "Накануне свадьбы девушка ищет своего отца среди трех бывших возлюбленных ее матери на греческом острове.",
+                quote: "\"Если ты счастлив, будь смелым, дорогая!\"",
+                posterUrl: "https://i.ibb.co/p26d83y/Mamma-Mia-2008.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "ae69447697931d6a715af848da3c066c" 
+            },
+            {
+                id: 7, titleRu: "27 свадеб", titleEn: "27 Dresses", year: 2008, genre: "Романтическая комедия.",
+                plot: "Женщина, которая всегда была подружкой невесты, должна, наконец, позаботиться о своей собственной жизни и любви.",
+                quote: "\"Быть подружкой невесты — это все равно, что стать вратарем в хоккее. Ты всегда рядом, но никто не замечает твоего присутствия.\"",
+                posterUrl: "https://i.ibb.co/b34Xp1d/27-Dresses-2008.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "3abf9c34228dce20a17295c8226489ec" 
+            },
+            {
+                id: 8, titleRu: "Предложение", titleEn: "The Proposal", year: 2009, genre: "Романтическая комедия.",
+                plot: "Властная начальница заставляет своего ассистента притвориться ее женихом, чтобы избежать депортации.",
+                quote: "\"Я знаю, что ты хороший парень. Только не идеальный. И мне это нравится.\"",
+                posterUrl: "https://i.ibb.co/QpvL9n4/The-Proposal-2009.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "7c93c75c846a06d557ee8908da6e97de" 
+            },
+            {
+                id: 9, titleRu: "Как стать принцессой", titleEn: "The Princess Diaries", year: 2001, genre: "Подростковая комедия, Драма.",
+                plot: "Неуклюжая школьница из Сан-Франциско узнает, что она — наследница трона европейского королевства.",
+                posterUrl: "https://i.ibb.co/r7XyF07/The-Princess-Diaries-2001.jpg",
+                quote: "\"Смелость — это не отсутствие страха, а способность действовать вопреки ему.\"",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "a34120f3af0b9129695f14b21c64b6bb" 
+            },
+            {
+                id: 10, titleRu: "Война невест", titleEn: "Bride Wars", year: 2009, genre: "Комедия, Романтика.",
+                plot: "Две лучшие подруги становятся заклятыми врагами, когда их свадьбы оказываются назначены на один и тот же день.",
+                quote: "\"Ты не можешь быть хорошей невестой, если не знаешь, что такое быть хорошим другом.\"",
+                posterUrl: "https://i.ibb.co/tCg3r0P/Bride-Wars-2009.jpg",
+                // *** ОБНОВЛЕННЫЙ ID RuTube ***
+                rutubeId: "eb3709ef32b7a3e92766e77d42f5dac7" 
+            }
+        ];
+        
+        // --- ДАННЫЕ ДЛЯ СТРАНИЦЫ МУЗЫКА ---
+        const songsData = [
+            {
+                song: "A Thousand Miles",
+                artist: "Vanessa Carlton",
+                film: "Белые цыпочки (White Chicks, 2004)",
+                scene: "Классический комедийный момент, когда Маркус/Кевин поют эту песню в машине.",
+                rutubeId: "f48419f0c86da34d40e09a72f74e00b7" 
+            },
+            {
+                song: "Breathe (2 AM)",
+                artist: "Anna Nalick",
+                film: "Дьявол носит Prada (The Devil Wears Prada, 2006)",
+                scene: "Используется в эмоционально важные моменты, подчеркивая внутренние переживания героини.",
+                rutubeId: "9f1afa07335d24da3f49a6c6bb42d396" 
+            },
+            {
+                song: "This Love",
+                artist: "Maroon 5",
+                film: "Как отделаться от парня за 10 дней (2003)",
+                scene: "Популярный трек, задающий энергичный и современный тон всему фильму.",
+                rutubeId: "1b55bf332d4828a83af52842aae053b2" 
+            },
+            {
+                song: "Come Away With Me",
+                artist: "Norah Jones",
+                film: "Любовь с уведомлением (Two Weeks Notice, 2002)",
+                scene: "Мягкий джазовый трек, часто звучащий в спокойные, романтические моменты.",
+                rutubeId: "953c7c33cd87f47270104150658ced56" 
+            }
+        ];
+
 
         /**
          * Инициализация сайта: рендеринг контента и установка начальной страницы.
