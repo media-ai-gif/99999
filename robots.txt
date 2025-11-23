@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://media-ai-gif.github.io/99999/sitemap.xml
