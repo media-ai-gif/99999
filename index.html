@@ -17,7 +17,7 @@
     <meta name="yandex-verification" content="a54c9e783bccd64e" />
 
     <!-- SEO & Open Graph -->
-    <meta name="description" content="Погрузись в эстетику Y2K! Топ-10 лучших романтических комедий 2000-х, культовая музыка, стиль и интерактивный тест 'Какая ты героиня ромкома?'.">
+    <meta name="description" content="Сайт о культуре Y2K и романтических комедиях 2000-х годов – стили, музыка, лучшие фильмы.">
     <meta name="keywords" content="Y2K, ромкомы, 2000-е, фильмы о любви, тест, стиль нулевых, Риз Уизерспун, дрянные девчонки, мода 2000х">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://media-ai-gif.github.io/99999/" />
@@ -273,7 +273,7 @@
                     Само название «Y2K» появилось из-за компьютерной "Ошибки 2000 года" (Year 2 Kilo), когда эксперты опасались, что устаревшее программное обеспечение, использующее только две последние цифры года, ошибочно воспримет '00' как 1900. Эта паника, хотя и не привела к катастрофе, стала символом перехода и сформировала основу всей эстетики.
                 </p>
                 <p class="text-lg mb-4">
-                    Основная идея Y2K — это вера в «светлое, технологичное будущее» и позитивные изменения, которые принесут гаджеты. В этот период персональные компьютеры переживали свой полноценный выход в мир, а бум интернета и мобильных телефонов подогревал идеи глобализации. У людей появилась возможность получать моментальные сообщения от людей в другой стране — это был "культурный шок", осознание, что "жизнь теперь намного лучше".
+                    Основная идея Y2K — это вера в «светлое, технологичное будущее» и позитивные изменения, которые принесут гаджеты. В этот период персональные компьютеры переживали свой полноценный выход в мир, а бум интернета и мобильных телефонов подогревали идеи глобализации. У людей появилась возможность получать моментальные сообщения от людей в другой стране — это был "культурный шок", осознание, что "жизнь теперь намного лучше".
                 </p>
                 <p class="text-lg mb-6 font-bold text-purple-700">
                     Вся поп-культура, включая ромкомы, была пронизана «хромом, космосом и виртуальной реальностью» (вспомните "Матрицу"), выражая этот восторг. Культура Y2K — это эмоции и идеи о безграничных возможностях, которые открыли технологии.
@@ -607,11 +607,16 @@
         function handleNext() {
             if (currentQuestionIndex === -1) {
                 // Если тест завершен, кнопка становится "Начать сначала"
+                // ЦЕЛЬ: ПЕРЕЗАПУСК
+                if (typeof ym !== 'undefined') { ym(105132373, 'reachGoal', 'quiz_restart'); }
                 startQuiz();
                 return;
             }
 
             if (selectedOptionScore !== null) {
+                 // ЦЕЛЬ: ОТВЕТ НА ВОПРОС
+                 if (typeof ym !== 'undefined') { ym(105132373, 'reachGoal', 'quiz_answer_step'); }
+
                 totalScore += selectedOptionScore;
                 currentQuestionIndex++;
                 selectedOptionScore = null;
@@ -624,6 +629,8 @@
                 }
             } else if (currentQuestionIndex === 0 && document.getElementById('quiz-result-area').classList.contains('hidden')) {
                 // Начало теста
+                // ЦЕЛЬ: СТАРТ ТЕСТА
+                if (typeof ym !== 'undefined') { ym(105132373, 'reachGoal', 'quiz_start'); }
                 currentQuestionIndex = 0;
                 startQuiz();
             } else {
@@ -649,6 +656,9 @@
          * Показывает финальный результат
          */
         async function showResult() {
+            // ЦЕЛЬ: ТЕСТ ЗАВЕРШЕН (ГЛАВНАЯ КОНВЕРСИЯ)
+            if (typeof ym !== 'undefined') { ym(105132373, 'reachGoal', 'quiz_complete'); }
+            
             const area = document.getElementById('quiz-question-area');
             const resultElement = document.getElementById('quiz-result-area');
             const nextButton = document.getElementById('quiz-next-button');
@@ -1009,7 +1019,7 @@
                 id: 6, titleRu: "Мамма Миа!", titleEn: "Mamma Mia!", year: 2008, genre: "Мюзикл, Романтика.",
                 plot: "Накануне свадьбы девушка ищет своего отца среди трех бывших возлюбленных ее матери на греческом острове.",
                 quote: "\"Если ты счастлив, будь смелым, дорогая!\"",
-                posterUrl: image: "",
+                posterUrl: "https://i.ibb.co/p26d83y/Mamma-Mia-2008.jpg",
                 // *** ОБНОВЛЕННЫЙ ID RuTube ***
                 rutubeId: "ae69447697931d6a715af848da3c066c" 
             },
@@ -1017,7 +1027,7 @@
                 id: 7, titleRu: "27 свадеб", titleEn: "27 Dresses", year: 2008, genre: "Романтическая комедия.",
                 plot: "Женщина, которая всегда была подружкой невесты, должна, наконец, позаботиться о своей собственной жизни и любви.",
                 quote: "\"Быть подружкой невесты — это все равно, что стать вратарем в хоккее. Ты всегда рядом, но никто не замечает твоего присутствия.\"",
-                posterUrl: image:  "https://24smi.org/public/media/movie/2023/04/19/dagbq9sqfsav-27-svadeb.png",
+                posterUrl: "https://24smi.org/public/media/movie/2023/04/19/dagbq9sqfsav-27-svadeb.png",
                 // *** ОБНОВЛЕННЫЙ ID RuTube ***
                 rutubeId: "3abf9c34228dce20a17295c8226489ec" 
             },
@@ -1025,14 +1035,14 @@
                 id: 8, titleRu: "Предложение", titleEn: "The Proposal", year: 2009, genre: "Романтическая комедия.",
                 plot: "Властная начальница заставляет своего ассистента притвориться ее женихом, чтобы избежать депортации.",
                 quote: "\"Я знаю, что ты хороший парень. Только не идеальный. И мне это нравится.\"",
-                posterUrl: image: "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/5b0441e5-a7d8-4504-bbdc-2ff05852e538/600x900",
+                posterUrl: "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/5b0441e5-a7d8-4504-bbdc-2ff05852e538/600x900",
                 // *** ОБНОВЛЕННЫЙ ID RuTube ***
                 rutubeId: "7c93c75c846a06d557ee8908da6e97de" 
             },
             {
                 id: 9, titleRu: "Как стать принцессой", titleEn: "The Princess Diaries", year: 2001, genre: "Подростковая комедия, Драма.",
                 plot: "Неуклюжая школьница из Сан-Франциско узнает, что она — наследница трона европейского королевства.",
-                posterUrl: image: "https://avatars.mds.yandex.net/get-kinopoisk-image/1704946/d0fb6056-566f-45ee-86ce-bf8937880659/600x900",
+                posterUrl: "https://avatars.mds.yandex.net/get-kinopoisk-image/1704946/d0fb6056-566f-45ee-86ce-bf8937880659/600x900",
                 quote: "\"Смелость — это не отсутствие страха, а способность действовать вопреки ему.\"",
                 // *** ОБНОВЛЕННЫЙ ID RuTube ***
                 rutubeId: "a34120f3af0b9129695f14b21c64b6bb" 
@@ -1041,7 +1051,7 @@
                 id: 10, titleRu: "Война невест", titleEn: "Bride Wars", year: 2009, genre: "Комедия, Романтика.",
                 plot: "Две лучшие подруги становятся заклятыми врагами, когда их свадьбы оказываются назначены на один и тот же день.",
                 quote: "\"Ты не можешь быть хорошей невестой, если не знаешь, что такое быть хорошим другом.\"",
-                posterUrl: image: "https://avatars.mds.yandex.net/get-ott/236744/2a0000019874ae615c11996ad2ad60c26af2/300x450",
+                posterUrl: "https://avatars.mds.yandex.net/get-ott/236744/2a0000019874ae615c11996ad2ad60c26af2/300x450",
                 // *** ОБНОВЛЕННЫЙ ID RuTube ***
                 rutubeId: "eb3709ef32b7a3e92766e77d42f5dac7" 
             }
