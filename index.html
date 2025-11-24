@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Y2K RomComs: Главная</title>
 
-    <!-- Varioqub experiments -->
     <script type="text/javascript">
     (function(e, x, pe, r, i, me, nt){
     e[i]=e[i]||function(){(e[i].a=e[i].a||[]).push(arguments)},
@@ -16,7 +15,6 @@
    
     <meta name="yandex-verification" content="a54c9e783bccd64e" />
 
-    <!-- SEO & Open Graph -->
     <meta name="description" content="Сайт о культуре Y2K и романтических комедиях 2000-х годов – стили, музыка, лучшие фильмы.">
     <meta name="keywords" content="Y2K, ромкомы, 2000-е, фильмы о любви, тест, стиль нулевых, Риз Уизерспун, дрянные девчонки, мода 2000х">
     <meta name="robots" content="index, follow">
@@ -29,7 +27,6 @@
     <meta property="og:description" content="Сайт о культуре Y2K и романтических комедиях 2000-х годов – стили, музыка, лучшие фильмы.">
     <meta property="og:locale" content="ru_RU">
 
-    <!-- Schema.org Microdata (JSON-LD) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -39,14 +36,11 @@
     }
     </script>
 
-    <!-- Фавикон -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💖</text></svg>">
     
-    <!-- Шрифты и стили -->
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
         (function(m,e,t,r,i,k,a){
             m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -58,8 +52,6 @@
         ym(105132373, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/105132373" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-
     <style>
         /* Настройка цветов */
         :root {
@@ -229,11 +221,96 @@
             transition: width 0.3s ease-in-out;
         }
 
+        /* --- СТИЛИ ДЛЯ ПРЕЛОАДЕРА (АНИМАЦИЯ-ОТКРЫВАШКИ) --- */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--purple-dark); /* Фон в стиле Y2K */
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1; /* Начальная видимость */
+            transition: opacity 0.5s ease-out; /* Плавное исчезновение */
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        .preloader-title {
+            color: var(--light-bg);
+            font-size: 2.5rem; /* Большой 8-битный текст */
+            text-shadow: 4px 4px 0 var(--pink-accent); /* Розовый 'пиксельный' эффект */
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .pixel-heart {
+            width: 60px;
+            height: 60px;
+            background-color: transparent;
+            position: relative;
+            animation: bounce-heart 0.8s infinite alternate; /* Анимация пульсации */
+        }
+
+        /* 8-битное сердце (чистый CSS, 4 квадрата) */
+        .pixel-heart::before, .pixel-heart::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: var(--pink-accent); /* Розовый цвет */
+        }
+
+        .pixel-heart::before {
+            top: 0;
+            left: 15px;
+            box-shadow: 
+                -15px 15px 0 0 var(--pink-accent),
+                15px 15px 0 0 var(--pink-accent),
+                0 30px 0 0 var(--pink-accent);
+        }
+
+        .pixel-heart::after {
+            top: 15px;
+            left: 0;
+            box-shadow: 
+                30px 0 0 0 var(--pink-accent);
+        }
+
+        @keyframes bounce-heart {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+        }
+
+        .preloader-loading-text {
+            color: var(--mint-green);
+            font-size: 1.2rem;
+            margin-top: 10px;
+            /* Эффект печатающей машинки/мерцания */
+            animation: blink-text 1s step-start infinite;
+        }
+
+        @keyframes blink-text {
+            50% { opacity: 0; }
+        }
+
     </style>
 </head>
 <body id="top">
 
-    <!-- 1. ФИКСИРОВАННЫЙ ХЕДЕР С НАВИГАЦИЕЙ -->
+    <div id="preloader">
+        <h1 class="preloader-title">
+            💖 Y2K ROMCOM 💖
+        </h1>
+        <div class="pixel-heart"></div>
+        <p class="preloader-loading-text">
+            Загрузка идеальной любви...
+        </p>
+    </div>
+
     <header class="y2k-header fixed w-full top-0 left-0">
         <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center px-4 py-2">
             <div class="text-2xl font-bold text-white tracking-widest mb-2 md:mb-0">
@@ -249,7 +326,6 @@
                 <button onclick="navigateTo('music')" id="nav-music" class="y2k-nav-button">
                     Музыка и Саундтреки
                 </button>
-                <!-- НОВАЯ КНОПКА ДЛЯ ТЕСТА -->
                 <button onclick="navigateTo('quiz')" id="nav-quiz" class="y2k-nav-button">
                     Тест: Героиня Y2K
                 </button>
@@ -257,16 +333,13 @@
         </div>
     </header>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ (КОНТЕЙНЕР ДЛЯ СТРАНИЦ) -->
     <main class="max-w-4xl mx-auto p-4 space-y-12">
         
-        <!-- 2. ГЛАВНАЯ СТРАНИЦА -->
         <div id="main-page" class="content-page">
             <h1 class="y2k-title text-center mx-auto mt-8 p-4 max-w-lg shadow-xl uppercase bg-white rounded-lg border-4 border-purple-dark">
                 Эпоха Y2K: Стиль и Ромкомы
             </h1>
 
-            <!-- СЕКЦИЯ 1: ПРОИСХОЖДЕНИЕ И ИДЕЯ Y2K (РАСШИРЕННЫЙ КОНТЕНТ) -->
             <section class="p-6 bg-white rounded-xl border-4 border-pink-accent shadow-lg mt-8">
                 <h2 class="text-3xl font-bold y2k-subtitle mb-4">Y2K: главные идеи</h2>
                 <p class="text-lg mb-4 border-l-4 border-pink-accent pl-3">
@@ -279,7 +352,6 @@
                     Вся поп-культура, включая ромкомы, была пронизана «хромом, космосом и виртуальной реальностью» (вспомните "Матрицу"), выражая этот восторг. Культура Y2K — это эмоции и идеи о безграничных возможностях, которые открыли технологии.
                 </p>
                 
-                <!-- ВСТАВКА ИЗОБРАЖЕНИЙ Y2K ЭСТЕТИКИ -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                     <img src="https://skillbox.ru/upload/setka_images/07324102052023_c0c954a3a268bfc515e88839a41a25de5bd1b194.jpg"
                          alt="[Изображение футуристической Y2K эстетики с хромированными элементами]" 
@@ -290,7 +362,6 @@
                 </div>
             </section>
             
-            <!-- СЕКЦИЯ 2: СТИЛЬ И ТРЕНДЫ (РАСШИРЕННЫЙ КОНТЕНТ) -->
             <section class="p-6 bg-white rounded-xl border-4 border-pink-accent shadow-lg mt-8">
                 <h2 class="text-3xl font-bold y2k-subtitle mb-4">Стиль Y2K: Мода, Аксессуары и Культура</h2>
                 <p class="text-lg mb-4">
@@ -298,7 +369,6 @@
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     
-                    <!-- Блок 1: Одежда -->
                     <div class="p-3 bg-pink-100 rounded-lg border-2 border-pink-400">
                         <h3 class="font-bold text-xl mb-2 text-purple-700">Одежда и Материалы</h3>
                         <p class="text-sm">
@@ -306,7 +376,6 @@
                         </p>
                     </div>
 
-                    <!-- Блок 2: Аксессуары -->
                     <div class="p-3 bg-pink-100 rounded-lg border-2 border-pink-400">
                         <h3 class="font-bold text-xl mb-2 text-purple-700">Аксессуары</h3>
                         <p class="text-sm">
@@ -314,7 +383,6 @@
                         </p>
                     </div>
 
-                    <!-- Блок 3: Макияж -->
                     <div class="p-3 bg-pink-100 rounded-lg border-2 border-pink-400">
                         <h3 class="font-bold text-xl mb-2 text-purple-700">Культовый Макияж</h3>
                         <p class="text-sm">
@@ -327,13 +395,10 @@
 
             <h2 class="text-3xl font-bold y2k-subtitle text-center mt-12 mb-6">12 Икон Жанра </h2>
 
-            <!-- СЕТКА КАРТОЧЕК АКТЕРОВ: 2 колонки на мобильных, 3 колонки на планшетах/десктопах -->
             <div id="actors-grid" class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                <!-- Актерские карточки будут сгенерированы здесь -->
-            </div>
+                </div>
         </div>
 
-        <!-- 3. СТРАНИЦА ТОП-10 (изначально скрыта) -->
         <div id="top10-page" class="content-page hidden">
             <h1 class="y2k-title text-center mx-auto mt-8 p-4 max-w-lg shadow-xl uppercase bg-white rounded-lg border-4 border-purple-dark">
                 Топ 10 Ромкомов 2000-х
@@ -343,13 +408,10 @@
                 Самые яркие и ностальгические фильмы десятилетия! Нажмите на кнопку «Подробности и трейлер».
             </p>
 
-            <!-- СЕТКА КАРТОЧЕК ФИЛЬМОВ (Генерируется JS) -->
             <div id="films-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Здесь будет сгенерирован контент -->
-            </div>
+                </div>
         </div>
         
-        <!-- 4. СТРАНИЦА МУЗЫКА И САУНДТРЕКИ (изначально скрыта) -->
         <div id="music-page" class="content-page hidden">
             <h1 class="y2k-title text-center mx-auto mt-8 p-4 max-w-lg shadow-xl uppercase bg-white rounded-lg border-4 border-purple-dark">
                 Музыка: Звуки Ромкомов 2000-х
@@ -364,33 +426,25 @@
 
             <h2 class="text-3xl font-bold y2k-subtitle text-center mt-12 mb-6">Песни, определившие жанр</h2>
 
-            <!-- СЕТКА КАРТОЧЕК ПЕСЕН -->
             <div id="songs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Карточки песен будут сгенерированы здесь -->
-            </div>
+                </div>
         </div>
         
-        <!-- 5. НОВЫЙ РАЗДЕЛ: СТРАНИЦА ТЕСТА (изначально скрыта) -->
         <div id="quiz-page" class="content-page hidden">
             <h1 class="y2k-title text-center mx-auto mt-8 p-4 max-w-lg shadow-xl uppercase bg-white rounded-lg border-4 border-purple-dark">
                 Узнай, Какая Ты Героиня Ромкома Y2K!
             </h1>
             
-            <!-- Контейнер для прогресса -->
             <div class="quiz-progress-bar w-full rounded-full mt-4 mb-8">
                 <div id="quiz-progress" class="quiz-progress-fill rounded-full" style="width: 0%;"></div>
             </div>
 
             <section id="quiz-container" class="p-6 bg-white rounded-xl border-4 border-pink-accent shadow-lg mt-8">
-                <!-- Область вопросов и результатов -->
                 <div id="quiz-question-area" class="space-y-6">
-                    <!-- Вопросы будут рендериться здесь -->
-                </div>
+                    </div>
                 <div id="quiz-result-area" class="hidden text-center">
-                    <!-- Результат будет рендериться здесь -->
-                </div>
+                    </div>
                 
-                <!-- Кнопка "Далее" / "Начать тест" -->
                 <button id="quiz-next-button" onclick="handleNext()" class="y2k-nav-button w-full mt-6 text-lg">
                     Начать Тест!
                 </button>
@@ -399,7 +453,6 @@
 
 
         
-        <!-- НИЖНИЙ КОЛОНТИТУЛ -->
         <footer class="text-center p-6 mt-12 text-sm border-t-4 border-dashed border-pink-400">
             <p class="text-purple-700 font-bold">Сделано с любовью к Y2K ностальгии. ✨</p>
             <a href="#top" class="text-pink-600 hover:text-pink-900 underline mt-2 inline-block">Вернуться наверх</a>
@@ -407,7 +460,6 @@
 
     </main>
 
-    <!-- СКРИПТЫ ДЛЯ ДАННЫХ И ИНТЕРАКТИВНОСТИ -->
     <script>
         // ИНСТРУКЦИЯ: const apiKey = "" должна быть пустой.
         const apiKey = "";
@@ -459,7 +511,7 @@
                 q: "4. Как ты реагируешь на парня, который тебя недооценивает?",
                 options: [
                     { text: "Доказываю ему свою правоту через блестящую карьеру и успех.", score: 1, image: "https://placehold.co/100x70/00FFFF/330066?text=УСПЕХ" },
-                    { text: "Просто игнорирую и нахожу себе новых друзей, которые меня ценят.", score: 2, image: "https://placehold.co/100x70/FFD700/330066?text=ДРУЗЬЯ" },
+                    { text: "Просто игнорирую и нахожу себе новых друзей, которые меня ценят.", score: 2, image: "https://placehold.co/100x70/98FF98/330066?text=ДРУЗЬЯ" },
                     { text: "Заключаю с ним пари, чтобы преподать ему урок, и побеждаю.", score: 3, image: "https://placehold.co/100x70/FFA500/FFFFFF?text=ПАРИ" },
                     { text: "Случайно становлюсь принцессой. Это обычно решает проблему.", score: 4, image: "https://placehold.co/100x70/DAA520/FFFFFF?text=ПРИНЦЕССА" }
                 ]
@@ -757,10 +809,32 @@
             `;
         }
 
+        // --- ФУНКЦИИ ПРЕЛОАДЕРА (8-БИТНАЯ АНИМАЦИЯ) ---
+
+        /**
+         * Скрывает прелоадер после загрузки страницы.
+         */
+        function hidePreloader() {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                // Убеждаемся, что контент уже отрендерен
+                setTimeout(() => {
+                    preloader.style.opacity = '0'; // Запускаем CSS transition
+                    // Удаляем элемент после завершения анимации
+                    setTimeout(() => {
+                        preloader.remove();
+                        // Убеждаемся, что основной контент виден (на случай, если был body {overflow: hidden})
+                        document.body.style.overflow = ''; 
+                    }, 500); 
+                }, 100); // Небольшая задержка после полной загрузки
+            }
+        }
+
+        // Вызов функции скрытия прелоадера при полной загрузке всего контента
+        window.addEventListener('load', hidePreloader);
+
 
         // --- ОБЩИЕ ФУНКЦИИ (ОСТАВИТЬ КАК БЫЛО) ---
-        
-        // ... (Все остальные функции navigateTo, generateActorCardHTML, generateVideoEmbed, generateSongCardHTML, generateFilmCardHTML, toggleFilmDetails)
         
         /**
          * Переключает видимость страниц и стили кнопок навигации.
@@ -870,7 +944,6 @@
             return `
                 <div class="y2k-card p-4 rounded-lg">
                     <div class="flex flex-col md:flex-row gap-4 items-start">
-                        <!-- Блок Постера -->
                         <div class="flex-shrink-0 w-full md:w-1/3">
                             <img src="${film.posterUrl}" 
                                  alt="Постер ${film.titleRu}" 
@@ -878,7 +951,6 @@
                                  onerror="this.onerror=null;this.src='${placeholderUrl}'; this.style.height='200px'; this.style.width='100%';" >
                         </div>
 
-                        <!-- Блок Текста и Кнопки -->
                         <div class="flex-grow w-full md:w-2/3">
                             <h2 class="text-xl md:text-2xl font-bold mb-1 text-pink-700">#${film.id} ${film.titleRu} (${film.year})</h2>
                             <p class="italic mb-4 text-gray-500">${film.titleEn}</p>
@@ -892,7 +964,6 @@
                         </div>
                     </div>
 
-                    <!-- Секция с деталями и трейлером (скрыта по умолчанию) -->
                     <div id="film-details-${film.id}" class="details-section p-4 mt-4 hidden">
                         <h3 class="text-xl font-bold text-purple-700 mb-2">Сюжет</h3>
                         <p class="mb-4">${film.plot}</p>
